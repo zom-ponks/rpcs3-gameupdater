@@ -1,24 +1,61 @@
 package main
 
 import (
+	// TODO: these are the UI libs
 	//"fyne.io/fyne/app"
 	//"fyne.io/fyne/widget"
-	//"gopkg.in/yaml.v2"
+	// TODO: figure out if we really need this
 
 	"bufio"
 	"crypto/tls"
+	"encoding/xml"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"strings"
-	//"log"
 )
 
 /* constants */
 
 const urlPattern string = "https://a0.ww.np.dl.playstation.net/tpl/np/%s/%s-ver.xml"
 const gamesYAML = "games.yml"
+
+/* structures */
+
+/* this is the sony titlepatch format */
+
+// Paramsfo contains the title of the game
+type Paramsfo struct {
+	TITLE string `xml:"TITLE"`
+}
+
+// Package contains the actual patch file along with metadata (size, sha1)
+type Package struct {
+	Size     string   `xml:"size,attr"`
+	SHA1     string   `xml:"sha1sum,attr"`
+	Paramsfo Paramsfo `xml:"paramsfo"`
+	URL      string   `xml:"url,attr"`
+	Version  string   `xml:"version,attr"`
+}
+
+// Tag wraps packages
+type Tag struct {
+	// we might have multiple patches in a title
+	Package []Package `xml:"package"`
+	Name    string    `xml:"name,attr"`
+	Popup   string    `xml:"popup,attr"`
+	Signoff string    `xml:"signoff,attr"`
+}
+
+// TitlePatch contains all of the patch data for a given title
+type TitlePatch struct {
+	Tag     Tag    `xml:"tag"`
+	Status  string `xml:"status,attr"`
+	Titleid string `xml:"titleid,attr"`
+}
+
+// just a generic helper
 
 func isError(err error) bool {
 	if err != nil {
@@ -73,8 +110,8 @@ func main() {
 		}
 
 		httpClient := &http.Client{Transport: transport}
-
 		response, err := httpClient.Get(url)
+
 		if isError(err) {
 			fmt.Printf("Error: Can't open url '%s'\n", url)
 		}
@@ -83,9 +120,20 @@ func main() {
 
 		if isError(err) {
 			fmt.Printf("can't read response body\n")
+			break
 		}
-		fmt.Printf("Response body: \n'''\n%s\n'''\n", body)
+		patch := TitlePatch{}
+		err = xml.Unmarshal([]byte(body), &patch)
 
+		if isError(err) {
+			fmt.Printf("can't parse response XML\n")
+			break
+		}
+
+		fmt.Printf("title '%s (%s) url '%s'\n",
+			patch.Tag.Package[0].Paramsfo.TITLE,
+			patch.Titleid,
+			patch.Tag.Package[0].URL)
 	}
 
 	// TODO: UI stuff
