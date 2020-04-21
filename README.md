@@ -11,3 +11,20 @@ Still very much work in progress.
 * configuration / config file
 * CLI
 * UI
+
+## Building Instructions
+
+### Windows
+
+* Install [MSYS2](https://www.msys2.org/) 
+* * Restart your terminal and editors 
+* `go build`
+
+### Linux
+
+* Install gcc/g++ + libraries for buildings (e.g. the *build-essentials* package on Debian/Ubuntu)
+* `go build
+
+### macOS
+
+* TODOs
