@@ -22,8 +22,8 @@ Still very much work in progress.
 
 ### Linux
 
-* Install gcc/g++ + libraries for buildings (e.g. the *build-essentials* package on Debian/Ubuntu)
-* `go build
+* Install gcc/g++ and libraries for building (e.g. the *build-essentials* package on Debian/Ubuntu)
+* `go build`
 
 ### macOS
 
