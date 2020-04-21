@@ -1,3 +1,5 @@
+/* rpcs3-gameupdater - constants & data structures */
+
 package main
 
 /* constants */

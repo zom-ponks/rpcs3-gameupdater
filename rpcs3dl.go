@@ -1,3 +1,5 @@
+/* rpcs3-gameupdater main entry point */
+
 package main
 
 import (

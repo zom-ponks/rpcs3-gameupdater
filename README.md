@@ -1,5 +1,13 @@
 # rpcs3-gameupdater
 
-Fetches game updates for the RPCS3 emulator. 
+Fetches game updates for the RPCS3 emulator.
 
 Still very much work in progress.
+
+## TODO
+
+* DL selection
+* DL path
+* configuration / config file
+* CLI
+* UI
