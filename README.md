@@ -8,8 +8,9 @@ Still very much work in progress.
 
 * DL selection
 * DL path
-* configuration / config file
-* CLI
+* Package versioning
+* configuration / config file persistence
+* CLI/command line arguments
 * UI
 
 ## Building Instructions
