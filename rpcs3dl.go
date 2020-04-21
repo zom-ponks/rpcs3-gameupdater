@@ -13,6 +13,7 @@ import (
 	"encoding/xml"
 	"fmt"
 	"io/ioutil"
+    "path/filepath"
 	"net/http"
 	"os"
 	"strings"
@@ -27,42 +28,87 @@ func isError(err error) bool {
 	return (err != nil)
 }
 
-/* parses the given games.yml file and returns a list of update urls */
+/* parses the given config.yml file and returns the path to dev_hdd0 */
 
-func parseGamesToURLs(gamesFile string) []string {
-	fmt.Printf("Parsing '%s'\n", gamesFile)
+func getGamesPath(configYML string) string {
+    fmt.Printf("Parsing '%s'\n", configYML)
+    path := "test"
+    file, err := os.Open(configYML)
 
-	var urlList []string
-	file, err := os.Open(gamesFile)
-
-	if isError(err) {
-		fmt.Printf("Couldn't open '%s' (errorcode: %d)", gamesFile, err)
-		return urlList
+    if isError(err) {
+		fmt.Printf("Couldn't open '%s' (errorcode: %d)", configYML, err)
+		return path
 	}
 
 	defer file.Close()
 
-	reader := bufio.NewReader(file)
+    emulatorDir := ""
+    reader := bufio.NewReader(file)
 
 	for {
 		line, err := reader.ReadString('\n')
-		gameID := strings.Split(line, ":")[0]
-		url := fmt.Sprintf(urlPattern, gameID, gameID)
+        if strings.Contains(line, "$(EmulatorDir):") {
+            emulatorDir = strings.TrimSpace(strings.Split(line, ":")[1])
+            if emulatorDir == "\"\"" {
+                emulatorDir = filepath.Dir(configYML) + "/"
+            }
+            fmt.Printf("emudir: " + emulatorDir + "TT\n")
+        }
+        if strings.Contains(line, "/dev_hdd0/") {
+            path = strings.Replace(strings.TrimSpace(strings.Split(line, ":")[1]), "$(EmulatorDir)", emulatorDir, -1)
+            fmt.Printf("path: " + path + "\n")
+        }
 
-		fmt.Printf("found game: '%s', url:'%s'\n", gameID, url)
-		urlList = append(urlList, url)
-
-		// we use err to figure out end of input
+        // we use err to figure out end of input
 		if isError(err) {
-			return urlList
+			return path
 		}
+    }
+
+    return path
+}
+
+/* replaces the variable in the URL with the gameID */
+
+func getURLFromID(id string) string {
+    return fmt.Sprintf(urlPattern, id, id)
+}
+
+/* gets games URLs from the various folders */
+
+func getGamesURLs(path string) []string {
+    var urlList []string
+
+    // first reads the disc folder
+    files, err := ioutil.ReadDir(path + "disc")
+	if err != nil {
+		fmt.Printf("Couldn't open '%s' (errorcode: %d)", path, err)
+		return urlList
 	}
+	// then reads the game folder
+	files2, err := ioutil.ReadDir(path + "game")
+	if err != nil {
+		fmt.Printf("Couldn't open '%s' (errorcode: %d)", path, err)
+		return urlList
+	}
+	files = append(files, files2...)
+
+	for _, file := range files {
+        if file.IsDir() && file.Name() != "TEST12345" && file.Name() != ".locks" {
+            url := getURLFromID(file.Name())
+            urlList = append(urlList, url)
+        }
+	}
+
+    return urlList
 }
 
 func main() {
-	fmt.Println("downloading using games.yml")
+    initConfig()
+	fmt.Println("downloading using config.yml")
 
-	urls := parseGamesToURLs(gamesYAML)
+	path := getGamesPath(conf.ConfigYMLPath)
+    urls := getGamesURLs(path)
 
 	for index, url := range urls {
 		fmt.Printf("fetching URL %d: '%s'\n", index, url)
@@ -90,7 +136,7 @@ func main() {
 
 		if isError(err) {
 			fmt.Printf("can't parse response XML\n")
-			break
+			continue
 		}
 
 		fmt.Printf("title '%s (%s) url '%s'\n",
