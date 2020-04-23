@@ -3,15 +3,15 @@
 package main
 
 import (
-    "fmt"
-    "os"
-    "runtime"
+	"fmt"
+	"os"
+	"runtime"
 )
 
 // Config is the app wide configuration structure
 type Config struct {
-	Rpcs3Path string
-	PkgDLPath string
+	Rpcs3Path     string
+	PkgDLPath     string
 	ConfigYMLPath string
 }
 
@@ -32,27 +32,27 @@ func persistConfig() {
 // this sets up the initial configuration
 func initConfig() {
 	conf = Config{
-		Rpcs3Path: ".",
-		PkgDLPath: ".",
-        ConfigYMLPath: "",
+		Rpcs3Path:     ".",
+		PkgDLPath:     ".",
+		ConfigYMLPath: "",
 	}
 	confFile := "/rpcs3/config.yml"
-    goos := runtime.GOOS
-    switch goos {
-    case "freebsd":
-        fallthrough
-    case "linux":
-        if home := os.Getenv("XDG_CONFIG_HOME"); home != "" {
-            conf.ConfigYMLPath = home + confFile
-        } else if home := os.Getenv("HOME"); home != "" {
-            conf.ConfigYMLPath = home + "/.config" + confFile
-        } else {
-            conf.ConfigYMLPath = "~/.config" + confFile
-        }
-        fmt.Println(conf.ConfigYMLPath)
-    case "windows":
-        conf.ConfigYMLPath = os.Getenv("RPCS3_CONFIG_DIR") + confFile
-    }
+	goos := runtime.GOOS
+	switch goos {
+	case "freebsd":
+		fallthrough
+	case "linux":
+		if home := os.Getenv("XDG_CONFIG_HOME"); home != "" {
+			conf.ConfigYMLPath = home + confFile
+		} else if home := os.Getenv("HOME"); home != "" {
+			conf.ConfigYMLPath = home + "/.config" + confFile
+		} else {
+			conf.ConfigYMLPath = "~/.config" + confFile
+		}
+		fmt.Println(conf.ConfigYMLPath)
+	case "windows":
+		conf.ConfigYMLPath = os.Getenv("RPCS3_CONFIG_DIR") + confFile
+	}
 
 	confPath = "."
 }
