@@ -17,8 +17,8 @@ Still very much work in progress.
 
 ### Windows
 
-* Install [MSYS2](https://www.msys2.org/) 
-* * Restart your terminal and editors 
+* Install [MSYS2](https://www.msys2.org/)
+* * Restart your terminal and editors
 * `go build`
 
 ### Linux
@@ -26,6 +26,6 @@ Still very much work in progress.
 * Install gcc/g++ and libraries for building (e.g. the *build-essentials* package on Debian/Ubuntu)
 * `go build`
 
-### macOS
+### BSD
 
 * TODOs
