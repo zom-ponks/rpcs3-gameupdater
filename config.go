@@ -14,6 +14,8 @@ type Config struct {
 	ConfigYMLPath string
 	DLTimeout     int
 	DLRetries     int
+	debug         bool
+	color         bool
 }
 
 var conf Config
@@ -38,6 +40,8 @@ func initConfig() {
 		ConfigYMLPath: "",
 		DLTimeout:     30,
 		DLRetries:     3,
+		color:         true,
+		debug:         true,
 	}
 	confFile := "/rpcs3/config.yml"
 	goos := runtime.GOOS
