@@ -1,0 +1,9 @@
+language: go
+go: 1.14
+before_script:
+  - go get fyne.io/fyne
+  - go get gopkg.in/gookit/color.v1
+script: go build
+os:
+  - linux
+  - windows
