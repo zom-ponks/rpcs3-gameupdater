@@ -148,6 +148,8 @@ func main() {
 			patch.Tag.Package[0].Paramsfo.TITLE,
 			patch.Titleid,
 			patch.Tag.Package[0].URL))
+
+		//downloadFileWithRetries("/tmp/test", patch.Tag.Package[0].URL)
 	}
 
 	// TODO: UI stuff
