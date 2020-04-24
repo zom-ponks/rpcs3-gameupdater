@@ -3,7 +3,6 @@
 package main
 
 import (
-	"fmt"
 	"os"
 	"runtime"
 )
@@ -49,11 +48,10 @@ func initConfig() {
 		} else {
 			conf.ConfigYMLPath = "~/.config" + confFile
 		}
-		fmt.Println(conf.ConfigYMLPath)
 	case "windows":
 		conf.ConfigYMLPath = os.Getenv("RPCS3_CONFIG_DIR") + confFile
 	}
-
+	printInfo("config.yml should be at: " + conf.ConfigYMLPath)
 	confPath = "."
 }
 
