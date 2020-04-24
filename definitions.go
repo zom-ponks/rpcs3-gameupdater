@@ -6,6 +6,7 @@ package main
 
 const urlPattern string = "https://a0.ww.np.dl.playstation.net/tpl/np/%s/%s-ver.xml"
 const gamesYAML = "games.yml"
+const userAgent string = "Mozilla/5.0 (PLAYSTATION 3; 3.55)"
 
 /* structures */
 

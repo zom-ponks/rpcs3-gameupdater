@@ -17,13 +17,14 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 )
 
 // just a generic helper
 
 func isError(err error) bool {
 	if err != nil {
-		fmt.Println(err.Error())
+		printError(err.Error())
 	}
 	return (err != nil)
 }
@@ -31,12 +32,12 @@ func isError(err error) bool {
 /* parses the given config.yml file and returns the path to dev_hdd0 */
 
 func getGamesPath(configYML string) string {
-	fmt.Printf("Parsing '%s'\n", configYML)
+	printInfo("Parsing '%s'\n", configYML)
 	path := "test"
 	file, err := os.Open(configYML)
 
 	if isError(err) {
-		fmt.Printf("Couldn't open '%s' (errorcode: %d)", configYML, err)
+		printError("Couldn't open '%s' (errorcode: %d)", configYML, err)
 		return path
 	}
 
@@ -52,11 +53,11 @@ func getGamesPath(configYML string) string {
 			if emulatorDir == "\"\"" {
 				emulatorDir = filepath.Dir(configYML) + "/"
 			}
-			fmt.Printf("emudir: " + emulatorDir + "TT\n")
+			printDebug("emudir: " + emulatorDir + "TT\n")
 		}
 		if strings.Contains(line, "/dev_hdd0/") {
 			path = strings.Replace(strings.TrimSpace(strings.Split(line, ":")[1]), "$(EmulatorDir)", emulatorDir, -1)
-			fmt.Printf("path: " + path + "\n")
+			printDebug("path: " + path + "\n")
 		}
 
 		// we use err to figure out end of input
@@ -64,8 +65,6 @@ func getGamesPath(configYML string) string {
 			return path
 		}
 	}
-
-	return path
 }
 
 /* replaces the variable in the URL with the gameID */
@@ -82,13 +81,13 @@ func getGamesURLs(path string) []string {
 	// first reads the disc folder
 	files, err := ioutil.ReadDir(path + "disc")
 	if err != nil {
-		fmt.Printf("Couldn't open '%s' (errorcode: %d)", path, err)
+		printError("Couldn't open '%s' (errorcode: %d)", path, err)
 		return urlList
 	}
 	// then reads the game folder
 	files2, err := ioutil.ReadDir(path + "game")
 	if err != nil {
-		fmt.Printf("Couldn't open '%s' (errorcode: %d)", path, err)
+		printError("Couldn't open '%s' (errorcode: %d)", path, err)
 		return urlList
 	}
 	files = append(files, files2...)
@@ -105,41 +104,47 @@ func getGamesURLs(path string) []string {
 
 func main() {
 	initConfig()
+
+	conf := fetchConfig()
+
 	fmt.Println("downloading using config.yml")
 
 	path := getGamesPath(conf.ConfigYMLPath)
 	urls := getGamesURLs(path)
 
 	for index, url := range urls {
-		fmt.Printf("fetching URL %d: '%s'\n", index, url)
+		printInfo("fetching URL %d: '%s'\n", index, url)
 
 		// we need this because we can't verify the signature
 		transport := &http.Transport{
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 		}
 
-		httpClient := &http.Client{Transport: transport}
+		httpClient := &http.Client{Transport: transport,
+			Timeout: time.Duration(conf.DLTimeout) * time.Second}
+
+		// TODO: retry logic goes here
 		response, err := httpClient.Get(url)
 
 		if isError(err) {
-			fmt.Printf("Error: Can't open url '%s'\n", url)
+			printError("Error: Can't open url '%s'\n", url)
 		}
 		defer response.Body.Close()
 		body, err := ioutil.ReadAll(response.Body)
 
 		if isError(err) {
-			fmt.Printf("can't read response body\n")
+			printError("can't read response body\n")
 			break
 		}
 		patch := TitlePatch{}
 		err = xml.Unmarshal([]byte(body), &patch)
 
 		if isError(err) {
-			fmt.Printf("can't parse response XML\n")
+			printError("can't parse response XML\n")
 			continue
 		}
 
-		fmt.Printf("title '%s' (%s) url '%s'\n",
+		printInfo("title '%s (%s) url '%s'\n",
 			patch.Tag.Package[0].Paramsfo.TITLE,
 			patch.Titleid,
 			patch.Tag.Package[0].URL)

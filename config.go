@@ -3,7 +3,6 @@
 package main
 
 import (
-	"fmt"
 	"os"
 	"runtime"
 )
@@ -13,6 +12,8 @@ type Config struct {
 	Rpcs3Path     string
 	PkgDLPath     string
 	ConfigYMLPath string
+	DLTimeout     int
+	DLRetries     int
 }
 
 var conf Config
@@ -35,6 +36,8 @@ func initConfig() {
 		Rpcs3Path:     ".",
 		PkgDLPath:     ".",
 		ConfigYMLPath: "",
+		DLTimeout:     30,
+		DLRetries:     3,
 	}
 	confFile := "/rpcs3/config.yml"
 	goos := runtime.GOOS
@@ -49,11 +52,10 @@ func initConfig() {
 		} else {
 			conf.ConfigYMLPath = "~/.config" + confFile
 		}
-		fmt.Println(conf.ConfigYMLPath)
 	case "windows":
 		conf.ConfigYMLPath = os.Getenv("RPCS3_CONFIG_DIR") + confFile
 	}
-
+	printInfo("config.yml should be at: " + conf.ConfigYMLPath)
 	confPath = "."
 }
 
