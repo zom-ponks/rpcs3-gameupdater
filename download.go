@@ -52,17 +52,34 @@ func downloadFileWithRetries(filePath string, url string, sha string) {
 			printError("Couldn't open '%s' (errorcode: '%s')\n", filePath, err)
 			continue
 		}
-		if _, err := io.Copy(hash, file); err != nil {
+		stat, err := file.Stat()
+		if err != nil {
+			printError("Couldn't get stat for file '%s' (errorcode: '%s')\n", filePath, err)
+			continue
+		}
+		// skip reading last 0x20 per
+		// https://github.com/13xforever/psn-pkg-validator
+		// those bytes contain the csum
+		sizeToRead := stat.Size() - 0x20
+		if _, err := io.CopyN(hash, file, sizeToRead); err != nil {
 			printError("Couldn't copy the file data for '%s' to the sha (errorcode: '%s')", filePath, err)
 			continue
 		}
 		hashInBytes := hash.Sum(nil)[:20]
-		SHA1String := hex.EncodeToString(hashInBytes)
-		printDebug("passed sha: '%s'", sha)
-		printDebug("calculated sha: '%s'", SHA1String)
-		if sha == SHA1String {
-			printDebug("The sha1 matches for url '%s' at '%s'", url, filePath)
-			break
+		computedSHA := hex.EncodeToString(hashInBytes)
+		buf := make([]byte, 0x20)
+		n, _ := file.Read(buf)
+		printDebug("bytes copied: " + string(n))
+		storedSHA := hex.EncodeToString(buf[:20])
+		if sha == computedSHA {
+			printDebug("The passed sha1 matches the computed one for url '%s' at '%s'", url, filePath)
+			if storedSHA == computedSHA {
+				printDebug("The stored sha1 matches the computed one for url '%s' at '%s'", url, filePath)
+				break
+			} else {
+				printDebug("The stored sha1 does not match the computed one for url '%s' at '%s'", url, filePath)
+			}
+
 		} else {
 			printDebug("The sha1 does not match for url '%s' at '%s'", url, filePath)
 		}
