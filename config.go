@@ -7,8 +7,10 @@ import (
 	"runtime"
 )
 
+// Verbosity defines debug level
 type Verbosity int
 
+// None, Error, Warning, Info, Debug define the debug levels
 const (
 	None Verbosity = iota
 	Error
