@@ -10,6 +10,7 @@ const userAgent string = "Mozilla/5.0 (PLAYSTATION 3; 3.55)"
 
 /* structures */
 
+// GameInfo defines game data loaded from rpcs3
 type GameInfo struct {
 	ID      string
 	URL     string
