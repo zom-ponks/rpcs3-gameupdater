@@ -182,6 +182,7 @@ func getGamesFromServer() {
 func main() {
 	parseArguments()
 	initConfig()
+	getGamesFromServer()
 
 	// TODO: UI stuff
 	//app := app.New()
