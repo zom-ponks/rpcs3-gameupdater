@@ -1,4 +1,4 @@
-/* rpcs3-gameupdater - downlaod helpers */
+/* rpcs3-gameupdater - download helpers */
 
 package main
 

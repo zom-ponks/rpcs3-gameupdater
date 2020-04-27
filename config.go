@@ -5,6 +5,8 @@ package main
 import (
 	"os"
 	"runtime"
+
+	"github.com/go-yaml/yaml"
 )
 
 // Verbosity defines debug level
@@ -44,6 +46,10 @@ func persistConfig() {
 	return
 }
 
+func updateConfig(newconf Config) {
+	conf = newconf
+}
+
 // this sets up the initial configuration
 func initConfig() {
 	conf = Config{
@@ -55,6 +61,8 @@ func initConfig() {
 		color:         true,
 		verbosity:     Debug,
 	}
+
+	createConfFile()
 	confFile := "/rpcs3/config.yml"
 	goos := runtime.GOOS
 	switch goos {
@@ -73,6 +81,19 @@ func initConfig() {
 	}
 	printInfo("config.yml should be at: " + conf.ConfigYMLPath)
 	confPath = "."
+}
+
+func parseConfFile() {
+	//yaml.Unmarshal()
+}
+
+func createConfFile() {
+	confYAML, err := yaml.Marshal(&conf)
+	if isError(err) {
+		printError("error: %v", err)
+	}
+	printInfo(string(confYAML))
+	//fmt.printLn(string(confYAML[:len(confYAML)]))
 }
 
 // TODO: handle config changes gracefully, from UI and from command line args
