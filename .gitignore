@@ -4,6 +4,7 @@
 *.dll
 *.so
 *.dylib
+rpcs3-gameupdater
 
 # Test binary, built with `go test -c`
 *.test
