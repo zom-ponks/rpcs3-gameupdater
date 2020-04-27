@@ -10,6 +10,12 @@ const userAgent string = "Mozilla/5.0 (PLAYSTATION 3; 3.55)"
 
 /* structures */
 
+type GameInfo struct {
+	ID      string
+	URL     string
+	Version string
+}
+
 /* this is the sony titlepatch format */
 
 // Paramsfo contains the title of the game
