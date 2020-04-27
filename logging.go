@@ -11,50 +11,51 @@ import (
 /* prints debug messages */
 
 func printDebug(format string, a ...interface{}) {
-	if !fetchConfig().debug {
-		return
-	}
-	// check variable for verbosity
-	if true {
-		color.Gray.Printf(format, a...)
-	}
-}
-
-/* prints info messages */
-
-func printInfo(format string, a ...interface{}) {
-	if !fetchConfig().debug {
+	if fetchConfig().verbosity < Debug {
 		return
 	}
 	if fetchConfig().color {
-		color.Green.Printf("\n"+format+"\n", a...)
+		color.Gray.Printf(format+"\n", a...)
 	} else {
-		fmt.Printf("\n%s\n", format)
+		fmt.Printf(format+"\n", a...)
 	}
 }
 
 /* prints error messages */
 
 func printError(format string, a ...interface{}) {
-	if !fetchConfig().debug {
+	if fetchConfig().verbosity < Error {
 		return
 	}
 	if fetchConfig().color {
-		color.Red.Printf(format, a...)
+		color.Red.Printf(format+"\n", a...)
 	} else {
-		fmt.Printf("\n%s\n", format)
+		fmt.Printf(format+"\n", a...)
+	}
+}
+
+/* prints info messages */
+
+func printInfo(format string, a ...interface{}) {
+	if fetchConfig().verbosity < Info {
+		return
+	}
+	if fetchConfig().color {
+		color.Green.Printf(format+"\n", a...)
+	} else {
+		fmt.Printf(format+"\n", a...)
 	}
 }
 
 /* prints warning messages */
 
 func printWarning(format string, a ...interface{}) {
-	if !fetchConfig().debug {
+	if fetchConfig().verbosity < Warning {
 		return
 	}
 	if fetchConfig().color {
-		color.Yellow.Printf(format, a...)
+		color.Yellow.Printf(format+"\n", a...)
 	} else {
-		fmt.Printf("\n%s\n", format)
+		fmt.Printf(format+"\n", a...)
 	}
 }
