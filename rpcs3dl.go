@@ -12,13 +12,14 @@ import (
 	"crypto/tls"
 	"encoding/xml"
 	"fmt"
-	"github.com/mattn/go-zglob"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/mattn/go-zglob"
 )
 
 // just a generic helper
@@ -138,16 +139,11 @@ func getGames(path string) []GameInfo {
 	return games
 }
 
-func main() {
-	initConfig()
-
-	conf := fetchConfig()
-
+func getGamesFromServer() {
 	printInfo("downloading using config.yml")
 
-	path := getGamesPath(conf.ConfigYMLPath)
+	path := getGamesPath(fetchConfig().ConfigYMLPath)
 	games := getGames(path)
-
 
 	for index, game := range games {
 		url := game.URL
@@ -190,6 +186,11 @@ func main() {
 
 		//downloadFileWithRetries("/tmp/test", patch.Tag.Package[0].URL, patch.Tag.Package[0].SHA1)
 	}
+}
+
+func main() {
+	parseArguments()
+	initConfig()
 
 	// TODO: UI stuff
 	//app := app.New()
