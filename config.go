@@ -7,6 +7,16 @@ import (
 	"runtime"
 )
 
+type Verbosity int
+
+const (
+	None Verbosity = iota
+	Error
+	Warning
+	Info
+	Debug
+)
+
 // Config is the app wide configuration structure
 type Config struct {
 	Rpcs3Path     string
@@ -14,7 +24,7 @@ type Config struct {
 	ConfigYMLPath string
 	DLTimeout     int
 	DLRetries     int
-	debug         bool
+	verbosity     Verbosity
 	color         bool
 }
 
@@ -41,7 +51,7 @@ func initConfig() {
 		DLTimeout:     30,
 		DLRetries:     3,
 		color:         true,
-		debug:         true,
+		verbosity:     Debug,
 	}
 	confFile := "/rpcs3/config.yml"
 	goos := runtime.GOOS

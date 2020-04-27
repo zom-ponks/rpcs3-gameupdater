@@ -34,7 +34,7 @@ func isError(err error) bool {
 
 func getGamesPath(configYML string) string {
 	printInfo("Parsing '" + configYML)
-	path := "test"
+	path := ""
 	file, err := os.Open(configYML)
 
 	if isError(err) {
@@ -54,7 +54,7 @@ func getGamesPath(configYML string) string {
 			if emulatorDir == "\"\"" {
 				emulatorDir = filepath.Dir(configYML) + "/"
 			}
-			printDebug("emudir: " + emulatorDir + "TT")
+			printDebug("emudir: " + emulatorDir)
 		}
 		if strings.Contains(line, "/dev_hdd0/") {
 			path = strings.Replace(strings.TrimSpace(strings.Split(line, ":")[1]), "$(EmulatorDir)", emulatorDir, -1)
@@ -148,9 +148,10 @@ func main() {
 	path := getGamesPath(conf.ConfigYMLPath)
 	games := getGames(path)
 
+
 	for index, game := range games {
 		url := game.URL
-		printInfo(fmt.Sprintf("fetching URL %d: '%s'", index, url))
+		printInfo("fetching URL %d: '%s'", index, url)
 
 		// we need this because we can't verify the signature
 		transport := &http.Transport{
@@ -164,7 +165,7 @@ func main() {
 		response, err := httpClient.Get(url)
 
 		if isError(err) {
-			printError(fmt.Sprintf("Error: Can't open url '%s'", url))
+			printError("Error: Can't open url '%s'", url)
 		}
 		defer response.Body.Close()
 		body, err := ioutil.ReadAll(response.Body)
@@ -181,10 +182,10 @@ func main() {
 			continue
 		}
 
-		printInfo(fmt.Sprintf("title '%s (%s) url '%s'",
+		printInfo("title '%s (%s) url '%s'",
 			patch.Tag.Package[0].Paramsfo.TITLE,
 			patch.Titleid,
-			patch.Tag.Package[0].URL))
+			patch.Tag.Package[0].URL)
 	}
 
 	// TODO: UI stuff
