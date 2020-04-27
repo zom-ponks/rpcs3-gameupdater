@@ -182,10 +182,13 @@ func main() {
 			continue
 		}
 
-		printInfo("title '%s (%s) url '%s'",
+		printInfo("title '%s' (%s) url '%s' SHA '%s':",
 			patch.Tag.Package[0].Paramsfo.TITLE,
 			patch.Titleid,
-			patch.Tag.Package[0].URL)
+			patch.Tag.Package[0].URL,
+			patch.Tag.Package[0].SHA1)
+
+		//downloadFileWithRetries("/tmp/test", patch.Tag.Package[0].URL, patch.Tag.Package[0].SHA1)
 	}
 
 	// TODO: UI stuff
