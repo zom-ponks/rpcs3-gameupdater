@@ -12,6 +12,7 @@ import (
 	"crypto/tls"
 	"encoding/xml"
 	"fmt"
+	"github.com/mattn/go-zglob"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -73,33 +74,68 @@ func getURLFromID(id string) string {
 	return fmt.Sprintf(urlPattern, id, id)
 }
 
-/* gets games URLs from the various folders */
+/* gets the game's version */
 
-func getGamesURLs(path string) []string {
-	var urlList []string
+func getVersion(path string) string {
+	// finds the PARAM.SFO
+	params, err := zglob.Glob(path + "/**/PARAM.SFO")
+	if isError(err) {
+		printError("Couldn't find "+path+"*PARAM.sfo  (errorcode: %s)\n", err)
+		return ""
+	}
+	param := params[0]
+	file, err := os.Open(param)
+	defer file.Close()
 
-	// first reads the disc folder
-	files, err := ioutil.ReadDir(path + "disc")
+	if isError(err) {
+		printError(fmt.Sprintf("Couldn't open '%s' (errorcode: %s)\n", param, err))
+		return ""
+	}
+	// goes to 16 bytes before the end
+	file.Seek(-8, 2)
+	buf := make([]byte, 6)
+	file.Read(buf)
+	version := string(buf[:5])
+	printDebug("The version for '%s' is : %s", path, version)
+
+	return version
+}
+
+/* gets games URLs and versions from a specific folder */
+
+func getGamesFromFolder(path string) []GameInfo {
+	var games []GameInfo
+	files, err := ioutil.ReadDir(path)
 	if err != nil {
 		printError(fmt.Sprintf("Couldn't open '%s' (errorcode: '%s')\n", path, err))
-		return urlList
+		return games
 	}
-	// then reads the game folder
-	files2, err := ioutil.ReadDir(path + "game")
-	if err != nil {
-		printError(fmt.Sprintf("Couldn't open '%s' (errorcode: '%s')\n", path, err))
-		return urlList
-	}
-	files = append(files, files2...)
 
 	for _, file := range files {
 		if file.IsDir() && file.Name() != "TEST12345" && file.Name() != ".locks" {
 			url := getURLFromID(file.Name())
-			urlList = append(urlList, url)
+			version := getVersion(path + file.Name())
+			game := GameInfo{
+				ID:      file.Name(),
+				URL:     url,
+				Version: version,
+			}
+			games = append(games, game)
 		}
 	}
+	return games
+}
 
-	return urlList
+/* gets games URLs and versions from the various folders */
+
+func getGames(path string) []GameInfo {
+	// first from the disc folder
+	games := getGamesFromFolder(path + "disc/")
+
+	// then reads the game folder
+	games = append(games, getGamesFromFolder(path+"game/")...)
+
+	return games
 }
 
 func main() {
@@ -110,9 +146,10 @@ func main() {
 	printInfo("downloading using config.yml")
 
 	path := getGamesPath(conf.ConfigYMLPath)
-	urls := getGamesURLs(path)
+	games := getGames(path)
 
-	for index, url := range urls {
+	for index, game := range games {
+		url := game.URL
 		printInfo(fmt.Sprintf("fetching URL %d: '%s'", index, url))
 
 		// we need this because we can't verify the signature
