@@ -8,6 +8,12 @@ import (
 	"gopkg.in/gookit/color.v1"
 )
 
+/* standard print */
+
+func print(format string, a ...interface{}) {
+	fmt.Printf(format+"\n", a...)
+}
+
 /* prints debug messages */
 
 func printDebug(format string, a ...interface{}) {

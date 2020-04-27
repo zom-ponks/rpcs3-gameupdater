@@ -97,7 +97,7 @@ func createConfFile() {
 		}
 		fmt.Println(string(b)) */
 	confTOML, err := toml.Marshal(conf)
-	if isError(err) {
+	if err != nil {
 		printError("error: %v", err)
 	}
 	printInfo(string(confTOML))
