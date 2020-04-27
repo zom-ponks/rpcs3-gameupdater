@@ -6,7 +6,7 @@ import (
 	"os"
 	"runtime"
 
-	"github.com/go-yaml/yaml"
+	"github.com/pelletier/go-toml"
 )
 
 // Verbosity defines debug level
@@ -23,13 +23,13 @@ const (
 
 // Config is the app wide configuration structure
 type Config struct {
-	Rpcs3Path     string
-	PkgDLPath     string
-	ConfigYMLPath string
-	DLTimeout     int
-	DLRetries     int
-	verbosity     Verbosity
-	color         bool
+	Rpcs3Path     string    `toml:"rpcs3path"`
+	PkgDLPath     string    `toml:"pkgdlpath"`
+	ConfigYMLPath string    `toml:"configymlpath"`
+	DLTimeout     int       `toml:"timeout"`
+	DLRetries     int       `toml:"retries"`
+	verbosity     Verbosity `toml:"verbosity"`
+	color         bool      `toml:"colorize"`
 }
 
 var conf Config
@@ -88,12 +88,19 @@ func parseConfFile() {
 }
 
 func createConfFile() {
-	confYAML, err := yaml.Marshal(&conf)
+
+	/*
+		config := Config{Postgres{User: "pelletier", Password: "mypassword", Database: "old_database"}}
+		b, err := toml.Marshal(config)
+		if err != nil {
+		    log.Fatal(err)
+		}
+		fmt.Println(string(b)) */
+	confTOML, err := toml.Marshal(conf)
 	if isError(err) {
 		printError("error: %v", err)
 	}
-	printInfo(string(confYAML))
-	//fmt.printLn(string(confYAML[:len(confYAML)]))
+	printInfo(string(confTOML))
 }
 
 // TODO: handle config changes gracefully, from UI and from command line args
