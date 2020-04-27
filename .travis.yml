@@ -3,6 +3,7 @@ go: 1.14
 before_script:
   - go get fyne.io/fyne
   - go get gopkg.in/gookit/color.v1
+  - go get github.com/mattn/go-zglob
 script: go build
 os:
   - linux
