@@ -2,10 +2,6 @@
 
 package main
 
-import (
-	"fmt"
-)
-
 const helpText string = `
 rpcs3-downloader
 
@@ -15,7 +11,7 @@ rpcs3-downloader
 
 // parse args and update config accordingly
 func parseArguments() {
-	fmt.Printf(helpText)
+	print(helpText)
 
 	//version string := appVersion
 	//flag.IntVar(&version, "version", , "help message for flagname")

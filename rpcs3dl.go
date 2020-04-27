@@ -22,15 +22,6 @@ import (
 	"github.com/mattn/go-zglob"
 )
 
-// just a generic helper
-
-func isError(err error) bool {
-	if err != nil {
-		printError(err.Error())
-	}
-	return (err != nil)
-}
-
 /* parses the given config.yml file and returns the path to dev_hdd0 */
 
 func getGamesPath(configYML string) string {
@@ -38,7 +29,7 @@ func getGamesPath(configYML string) string {
 	path := ""
 	file, err := os.Open(configYML)
 
-	if isError(err) {
+	if err != nil {
 		printError(fmt.Sprintf("Couldn't open '%s' (errorcode: %s)\n", configYML, err))
 		return path
 	}
@@ -63,7 +54,7 @@ func getGamesPath(configYML string) string {
 		}
 
 		// we use err to figure out end of input
-		if isError(err) {
+		if err != nil {
 			return path
 		}
 	}
@@ -80,15 +71,15 @@ func getURLFromID(id string) string {
 func getVersion(path string) string {
 	// finds the PARAM.SFO
 	params, err := zglob.Glob(path + "/**/PARAM.SFO")
-	if isError(err) {
-		printError("Couldn't find "+path+"*PARAM.sfo  (errorcode: %s)\n", err)
+	if err != nil {
+		printError("Error finding %s/**/PARAM.sfo  (errorcode: %s)\n", path, err)
 		return ""
 	}
 	param := params[0]
 	file, err := os.Open(param)
 	defer file.Close()
 
-	if isError(err) {
+	if err != nil {
 		printError(fmt.Sprintf("Couldn't open '%s' (errorcode: %s)\n", param, err))
 		return ""
 	}
@@ -108,7 +99,7 @@ func getGamesFromFolder(path string) []GameInfo {
 	var games []GameInfo
 	files, err := ioutil.ReadDir(path)
 	if err != nil {
-		printError(fmt.Sprintf("Couldn't open '%s' (errorcode: '%s')\n", path, err))
+		printError("Couldn't open '%s' (errorcode: '%s')\n", path, err)
 		return games
 	}
 
@@ -160,20 +151,20 @@ func getGamesFromServer() {
 		// TODO: retry logic goes here
 		response, err := httpClient.Get(url)
 
-		if isError(err) {
+		if err != nil {
 			printError("Error: Can't open url '%s'", url)
 		}
 		defer response.Body.Close()
 		body, err := ioutil.ReadAll(response.Body)
 
-		if isError(err) {
+		if err != nil {
 			printError("can't read response body.")
 			break
 		}
 		patch := TitlePatch{}
 		err = xml.Unmarshal([]byte(body), &patch)
 
-		if isError(err) {
+		if err != nil {
 			printError("can't parse response XML.")
 			continue
 		}

@@ -81,7 +81,7 @@ func downloadFileWithRetries(filePath string, url string, sha string) {
 			}
 
 		} else {
-			printDebug("The sha1 does not match for url '%s' at '%s'", url, filePath)
+			printDebug("The passed sha1 does not match the computed one for url '%s' at '%s'", url, filePath)
 		}
 	}
 
