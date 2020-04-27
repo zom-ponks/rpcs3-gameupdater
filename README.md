@@ -6,7 +6,7 @@ Still very much work in progress.
 
 ## Build status
 
-[All platforms](https://travis-ci.com/github/zom-ponks/rpcs3-gameupdater) | [![Build status](https://api.travis-ci.org/zom-ponks/rpcs3-gameupdater.svg?branch=master)](https://travis-ci.com/github/zom-ponks/rpcs3-gameupdater)
+All platforms [![Build Status](https://travis-ci.com/zom-ponks/rpcs3-gameupdater.svg?branch=master)](https://travis-ci.com/zom-ponks/rpcs3-gameupdater)
 
 
 ## TODO
