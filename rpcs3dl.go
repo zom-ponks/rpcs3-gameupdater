@@ -192,6 +192,9 @@ func main() {
 	parseArguments()
 	initConfig()
 
+	// test
+	fmt.Printf("Terminal: %v\n", isTTY())
+
 	// TODO: UI stuff
 	//app := app.New()
 
