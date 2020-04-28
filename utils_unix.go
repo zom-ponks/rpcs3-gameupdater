@@ -10,10 +10,9 @@ import (
 )
 
 func isTTY() bool {
-	term := true
 	fd := os.Stdout.Fd()
 	fmt.Println("linux/bsd")
-	term = terminal.IsTerminal(int(fd))
+	isTerm := terminal.IsTerminal(int(fd))
 
-	return term
+	return isTerm
 }

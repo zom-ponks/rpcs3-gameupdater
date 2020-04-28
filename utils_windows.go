@@ -8,12 +8,11 @@ import (
 )
 
 func isTTY() bool {
-	term := true
 	fd := os.Stdout.Fd()
 
 	var st uint32
 	err := windows.GetConsoleMode(windows.Handle(fd), &st)
-	term = err == nil
+	isTerm := (err == nil)
 
-	return term
+	return isTerm
 }
