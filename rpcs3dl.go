@@ -175,13 +175,14 @@ func getGamesFromServer() {
 			patch.Tag.Package[0].URL,
 			patch.Tag.Package[0].SHA1)
 
-		//downloadFileWithRetries("/tmp/test", patch.Tag.Package[0].URL, patch.Tag.Package[0].SHA1)
+		//downloadFileWithRetries(conf.PkgDLPath, patch.Tag.Package[0].URL, patch.Tag.Package[0].SHA1)
 	}
 }
 
 func main() {
 	parseArguments()
 	initConfig()
+	initDownloader()
 	getGamesFromServer()
 
 	// TODO: UI stuff

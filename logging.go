@@ -65,3 +65,15 @@ func printWarning(format string, a ...interface{}) {
 		fmt.Printf(format+"\n", a...)
 	}
 }
+
+/* prints over the same line */
+
+func sameLinePrint(format string, a ...interface{}) {
+	fmt.Print("\033[G\033[K") // move the cursor left and clear the line
+	fmt.Printf(format+"\n", a...)
+	fmt.Print("\033[A") // move the cursor up
+}
+
+func stopSameLinePrint() {
+	fmt.Print("\033[B") // move the cursor down
+}

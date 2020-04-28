@@ -3,48 +3,72 @@
 package main
 
 import (
-	"io"
 	"math/rand"
-	"net/http"
-	"os"
 	"time"
+
+	"github.com/cavaliercoder/grab"
 )
+
+var client *grab.Client
+
+// this sets up the downloader */
+func initDownloader() {
+	client = grab.NewClient()
+}
 
 /* simple downlaoder */
 
-func downloadFile(filePath string, url string) error {
+func downloadFile(folderPath string, url string) (string, error) {
 	// Get the data
-	resp, err := http.Get(url)
+	req, err := grab.NewRequest(folderPath, url)
 	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	// Create the file
-	file, err := os.Create(filePath)
-	if err != nil {
-		return err
+		return "", err
 	}
 
-	// Write the body to file
-	_, err = io.Copy(file, resp.Body)
+	resp := client.Do(req)
+	// start UI loop
+	t := time.NewTicker(500 * time.Millisecond)
+	defer t.Stop()
+	start := time.Now()
 
-	// Supposedly it is bad to defer for writes
-	file.Close()
-	return err
+Loop:
+	for {
+		select {
+		case <-t.C:
+			sameLinePrint("Transferred %v / %v bytes (%.2f%%) at %.0f Mb/s",
+				resp.BytesComplete(),
+				resp.Size(),
+				100*resp.Progress(),
+				resp.BytesPerSecond()/1024/1024)
+
+		case <-resp.Done:
+			sameLinePrint("Transferred %v / %v bytes (%.2f%%) at %.0f Mb/s",
+				resp.BytesComplete(),
+				resp.Size(),
+				100*resp.Progress(),
+				float64(resp.Size())/(time.Now().Sub(start).Seconds())/1024/1024)
+			stopSameLinePrint()
+			break Loop
+		}
+	}
+	if err := resp.Err(); err != nil {
+		printError("Download failed: %v\n", err)
+		return "", err
+	}
+	return resp.Filename, err
 }
 
 /* has logic to retry and sleep */
 
-func downloadFileWithRetries(filePath string, url string, sha string) {
+func downloadFileWithRetries(folderPath string, url string, sha string) {
 	for i := 0; i < fetchConfig().DLRetries; i++ {
 		time.Sleep(time.Duration(rand.Int31n(100)) * time.Millisecond)
-		err := downloadFile(filePath, url)
+		fileName, err := downloadFile(folderPath, url)
 		if err != nil {
-			printError("Couldn't download '%s' at '%s' (errorcode: '%s')", url, filePath, err)
+			printError("Couldn't download '%s' at '%s' (errorcode: '%s')", url, fileName, err)
 			continue
 		}
-		if verifyChecksums(filePath, sha) {
+		if verifyChecksums(fileName, sha) {
 			return
 		}
 	}
