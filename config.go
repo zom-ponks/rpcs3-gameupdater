@@ -84,7 +84,7 @@ func initConfig() {
 }
 
 func parseConfFile() {
-	//yaml.Unmarshal()
+	//toml.Unmarshal()
 }
 
 func createConfFile() {

@@ -195,5 +195,4 @@ func main() {
 	//w.SetContent(widget.NewLabel("Hello Fyne!"))
 
 	//w.ShowAndRun()
-
 }
