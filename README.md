@@ -4,10 +4,9 @@ Fetches game updates for the RPCS3 emulator.
 
 Still very much work in progress.
 
-## Build status
+## Status
 
-All platforms [![Build Status](https://travis-ci.com/zom-ponks/rpcs3-gameupdater.svg?branch=master)](https://travis-ci.com/zom-ponks/rpcs3-gameupdater)
-
+[![Build Status](https://travis-ci.com/zom-ponks/rpcs3-gameupdater.svg?branch=master)](https://travis-ci.com/zom-ponks/rpcs3-gameupdater) [![Go Report Card](https://goreportcard.com/badge/github.com/zom-ponks/rpcs3-gameupdater)](https://goreportcard.com/report/github.com/zom-ponks/rpcs3-gameupdater)
 
 ## TODO
 
@@ -23,14 +22,17 @@ All platforms [![Build Status](https://travis-ci.com/zom-ponks/rpcs3-gameupdater
 ### Windows
 
 * Install [MSYS2](https://www.msys2.org/)
+* Install [go](https://golang.org/dl/)
 * * Restart your terminal and editors
-* `go build`
+* `go build` in the checkout directory
 
 ### Linux
 
 * Install gcc/g++ and libraries for building (e.g. the *build-essentials* package on Debian/Ubuntu)
-* `go build`
+* Install go (package `golang` on Debian/Ubuntu)
+* `go build` in the checkout directory
 
 ### BSD
+* Install go (`pkg install go`)
+* `go build` in the checkout directory
 
-* TODOs
