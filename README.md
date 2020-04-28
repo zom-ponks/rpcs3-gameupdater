@@ -6,9 +6,7 @@ Still very much work in progress.
 
 ## Status
 
-All platforms [![Build Status](https://travis-ci.com/zom-ponks/rpcs3-gameupdater.svg?branch=master)](https://travis-ci.com/zom-ponks/rpcs3-gameupdater)
-
-[![Go Report Card](https://goreportcard.com/badge/github.com/zom-ponks/rpcs3-gameupdater)](https://goreportcard.com/report/github.com/zom-ponks/rpcs3-gameupdater)
+[![Build Status](https://travis-ci.com/zom-ponks/rpcs3-gameupdater.svg?branch=master)](https://travis-ci.com/zom-ponks/rpcs3-gameupdater) [![Go Report Card](https://goreportcard.com/badge/github.com/zom-ponks/rpcs3-gameupdater)](https://goreportcard.com/report/github.com/zom-ponks/rpcs3-gameupdater)
 
 ## TODO
 
