@@ -48,13 +48,11 @@ func verifyChecksums(filePath string, sha string) bool {
 		if storedSHA == computedSHA {
 			printDebug("The stored sha1 matches the computed one for '%s'", filePath)
 			return true
-		} else {
-			printDebug("The stored sha1 does not match the computed one for '%s'", filePath)
-			return false
 		}
-
-	} else {
-		printDebug("The passed sha1 does not match the computed one for '%s'", filePath)
+		printDebug("The stored sha1 does not match the computed one for '%s'", filePath)
 		return false
+
 	}
+	printDebug("The passed sha1 does not match the computed one for '%s'", filePath)
+	return false
 }
