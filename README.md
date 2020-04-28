@@ -4,10 +4,11 @@ Fetches game updates for the RPCS3 emulator.
 
 Still very much work in progress.
 
-## Build status
+## Status
 
 All platforms [![Build Status](https://travis-ci.com/zom-ponks/rpcs3-gameupdater.svg?branch=master)](https://travis-ci.com/zom-ponks/rpcs3-gameupdater)
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/zom-ponks/rpcs3-gameupdater)](https://goreportcard.com/report/github.com/zom-ponks/rpcs3-gameupdater)
 
 ## TODO
 
