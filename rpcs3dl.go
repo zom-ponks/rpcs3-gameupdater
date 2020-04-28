@@ -69,8 +69,12 @@ func getURLFromID(id string) string {
 /* gets the game's version */
 
 func getVersion(path string) string {
+	var folder string
+	if strings.Contains(path, "/disc/") {
+		folder = "/PS3_GAME"
+	}
 	// finds the PARAM.SFO
-	params, err := zglob.Glob(path + "/**/PARAM.SFO")
+	params, err := zglob.Glob(path + folder + "/PARAM.SFO")
 	if err != nil {
 		printError("Error finding %s/**/PARAM.sfo  (errorcode: %s)\n", path, err)
 		return ""
@@ -83,49 +87,48 @@ func getVersion(path string) string {
 		printError(fmt.Sprintf("Couldn't open '%s' (errorcode: %s)\n", param, err))
 		return ""
 	}
-	// goes to 16 bytes before the end
-	file.Seek(-8, 2)
-	buf := make([]byte, 6)
-	file.Read(buf)
-	version := string(buf[:5])
-	printDebug("The version for '%s' is : %s", path, version)
-
-	return version
+	kvp := readParamSFO(file)
+	return getVersionFromSFO(kvp)
 }
 
 /* gets games URLs and versions from a specific folder */
 
-func getGamesFromFolder(path string) []GameInfo {
-	var games []GameInfo
+func getGamesFromFolder(games map[string]GameInfo, path string) {
 	files, err := ioutil.ReadDir(path)
 	if err != nil {
 		printError("Couldn't open '%s' (errorcode: '%s')\n", path, err)
-		return games
+		return
 	}
 
 	for _, file := range files {
 		if file.IsDir() && file.Name() != "TEST12345" && file.Name() != ".locks" {
 			url := getURLFromID(file.Name())
 			version := getVersion(path + file.Name())
-			game := GameInfo{
-				ID:      file.Name(),
-				URL:     url,
-				Version: version,
+
+			if game, ok := games[file.Name()]; ok {
+				if game.Version < version {
+					game.Version = version
+				}
+			} else {
+				game := GameInfo{
+					URL:     url,
+					Version: version,
+				}
+				games[file.Name()] = game
 			}
-			games = append(games, game)
 		}
 	}
-	return games
 }
 
 /* gets games URLs and versions from the various folders */
 
-func getGames(path string) []GameInfo {
+func getGames(path string) map[string]GameInfo {
 	// first from the disc folder
-	games := getGamesFromFolder(path + "disc/")
+	games := make(map[string]GameInfo)
+	getGamesFromFolder(games, path+"disc/")
 
-	// then reads the game folder
-	games = append(games, getGamesFromFolder(path+"game/")...)
+	// then the game folder
+	getGamesFromFolder(games, path+"game/")
 
 	return games
 }
@@ -136,9 +139,10 @@ func getGamesFromServer() {
 	path := getGamesPath(fetchConfig().ConfigYMLPath)
 	games := getGames(path)
 
-	for index, game := range games {
+	for gameID, game := range games {
+		printDebug("gameID: %s, url: %s, version: %s", gameID, game.URL, game.Version)
 		url := game.URL
-		printInfo("fetching URL %d: '%s'", index, url)
+		//printInfo("fetching URL: '%s'", url)
 
 		// we need this because we can't verify the signature
 		transport := &http.Transport{
@@ -169,11 +173,11 @@ func getGamesFromServer() {
 			continue
 		}
 
-		printInfo("title '%s' (%s) url '%s' SHA '%s':",
-			patch.Tag.Package[0].Paramsfo.TITLE,
-			patch.Titleid,
-			patch.Tag.Package[0].URL,
-			patch.Tag.Package[0].SHA1)
+		/*printInfo("title '%s' (%s) url '%s' SHA '%s':",
+		patch.Tag.Package[0].Paramsfo.TITLE,
+		patch.Titleid,
+		patch.Tag.Package[0].URL,
+		patch.Tag.Package[0].SHA1)*/
 
 		//downloadFileWithRetries(conf.PkgDLPath, patch.Tag.Package[0].URL, patch.Tag.Package[0].SHA1)
 	}
