@@ -75,3 +75,9 @@ func sameLinePrint(format string, a ...interface{}) {
 func stopSameLinePrint() {
 	fmt.Fprint(os.Stdout, "\033[B") // move the cursor down
 }
+
+/* prints the fields of a struct */
+
+func printStruct(a interface{}) {
+	printDebug("%+v", a)
+}
