@@ -9,6 +9,7 @@ import (
 	"strconv"
 )
 
+// categories of data to be found in PARAMS.sfo
 const (
 	GameData uint16 = 0x4744
 	SaveData uint16 = 0x5344
@@ -16,6 +17,7 @@ const (
 	DiscGame uint16 = 0x4447
 )
 
+// Header of a PARAM.sfo file
 type Header struct {
 	Magic             [4]byte
 	Version           [4]byte
@@ -24,14 +26,17 @@ type Header struct {
 	IndexTableEntries uint32
 }
 
+// FMT is the data format
 type FMT uint16
 
+// Utf8. ASCII, Uint32 are the possible data formats
 const (
-	UTF_8  FMT = 0x0400
+	Utf8   FMT = 0x0400
 	ASCII      = 0x0402
-	UINT32     = 0x0404
+	Uint32     = 0x0404
 )
 
+// IndexTable of a PARAM.sfo file
 type IndexTable struct {
 	ParamKeyOffset  uint16
 	ParamDataFmt    FMT
@@ -40,6 +45,7 @@ type IndexTable struct {
 	ParamDataOffset uint32
 }
 
+// Table of a PARAM.sfo file
 type Table struct {
 	IndexTable IndexTable
 	Name       string
@@ -93,7 +99,7 @@ func readName(file *os.File, header Header, table IndexTable) string {
 func readValue(file *os.File, header Header, table IndexTable) string {
 	file.Seek(int64(header.DataTableStart+table.ParamDataOffset), 0)
 	switch table.ParamDataFmt {
-	case UINT32:
+	case Uint32:
 		var buf uint32
 		binary.Read(file, binary.LittleEndian, &buf)
 		return strconv.FormatUint(uint64(buf), 10)
@@ -101,7 +107,7 @@ func readValue(file *os.File, header Header, table IndexTable) string {
 		buf := make([]byte, table.ParamDataMaxLen)
 		binary.Read(file, binary.LittleEndian, &buf)
 		return string(buf)
-	case UTF_8:
+	case Utf8:
 		buf := make([]byte, table.ParamDataMaxLen)
 		binary.Read(file, binary.LittleEndian, &buf)
 		return string(buf)
