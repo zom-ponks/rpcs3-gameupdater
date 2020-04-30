@@ -18,8 +18,6 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
-
-	"github.com/mattn/go-zglob"
 )
 
 /* parses the given config.yml file and returns the path to dev_hdd0 */
@@ -74,7 +72,7 @@ func getVersion(path string) string {
 		folder = "/PS3_GAME"
 	}
 	// finds the PARAM.SFO
-	params, err := zglob.Glob(path + folder + "/PARAM.SFO")
+	params, err := filepath.Glob(path + folder + "/PARAM.SFO")
 	if err != nil {
 		printError("Error finding %s/**/PARAM.sfo  (errorcode: %s)\n", path, err)
 		return ""
