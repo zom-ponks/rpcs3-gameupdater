@@ -14,7 +14,7 @@ const userAgent string = "Mozilla/5.0 (PLAYSTATION 3; 3.55)"
 type GameInfo struct {
 	Category string
 	URL      string
-	Version  string
+	Version  float64
 }
 
 /* this is the sony titlepatch format */

@@ -67,7 +67,7 @@ func getURLFromID(id string) string {
 
 /* gets the game's version */
 
-func getCategoryAndVersion(path string) (string, string) {
+func getCategoryAndVersion(path string) (string, float64) {
 	var folder string
 	if strings.Contains(path, "/disc/") {
 		folder = "/PS3_GAME"
@@ -76,7 +76,7 @@ func getCategoryAndVersion(path string) (string, string) {
 	params, err := filepath.Glob(path + folder + "/PARAM.SFO")
 	if err != nil {
 		printError("Error finding %s/**/PARAM.sfo  (errorcode: %s)\n", path, err)
-		return "", ""
+		return "", 0.0
 	}
 	param := params[0]
 	file, err := os.Open(param)
@@ -84,7 +84,7 @@ func getCategoryAndVersion(path string) (string, string) {
 
 	if err != nil {
 		printError(fmt.Sprintf("Couldn't open '%s' (errorcode: %s)\n", param, err))
-		return "", ""
+		return "", 0.0
 	}
 	kvp := readParamSFO(file)
 	cat := getCategory(kvp)
@@ -93,7 +93,11 @@ func getCategoryAndVersion(path string) (string, string) {
 	if ver == "" {
 		ver = getVersion(kvp)
 	}
-	return cat, ver
+	versionF, err := strconv.ParseFloat(ver[0:5], 64)
+	if err != nil {
+		printError("Couldn't convert '%s' (errorcode: '%s')\n", ver, err)
+	}
+	return cat, versionF
 }
 
 /* gets games URLs and versions from a specific folder */
@@ -112,15 +116,7 @@ func getGamesFromFolder(games map[string]*GameInfo, path string) {
 			category, version := getCategoryAndVersion(path + file.Name())
 
 			if game, ok := games[file.Name()]; ok {
-				versionF, err := strconv.ParseFloat(version[0:5], 64)
-				if err != nil {
-					printError("Couldn't convert '%s' (errorcode: '%s')\n", version, err)
-				}
-				prevVersionF, err := strconv.ParseFloat(game.Version[0:5], 64)
-				if err != nil {
-					printError("Couldn't convert '%s' (errorcode: '%s')\n", game.Version, err)
-				}
-				if prevVersionF < versionF {
+				if game.Version < version {
 					game.Version = version
 				}
 			} else {
@@ -188,13 +184,24 @@ func getGamesFromServer() {
 			continue
 		}
 
-		/*printInfo("title '%s' (%s) url '%s' SHA '%s':",
-		patch.Tag.Package[0].Paramsfo.TITLE,
-		patch.Titleid,
-		patch.Tag.Package[0].URL,
-		patch.Tag.Package[0].SHA1)*/
+		for i := range patch.Tag.Package {
+			printInfo("title '%s' (%s) version %s url '%s' SHA '%s':",
+				patch.Tag.Package[i].Paramsfo.TITLE,
+				patch.Titleid,
+				patch.Tag.Package[i].Version,
+				patch.Tag.Package[i].URL,
+				patch.Tag.Package[i].SHA1)
+			version, err := strconv.ParseFloat(patch.Tag.Package[i].Version, 64)
+			if err != nil {
+				printError("Couldn't convert '%s' (errorcode: '%s')\n", patch.Tag.Package[i].Version, err)
+			}
+			if version < game.Version {
+				printDebug("Version %f is inferior to current of %f", version, game.Version)
+				continue
+			}
+			//downloadFileWithRetries(conf.PkgDLPath, patch.Tag.Package[i].URL, patch.Tag.Package[i].SHA1)
+		}
 
-		//downloadFileWithRetries(conf.PkgDLPath, patch.Tag.Package[0].URL, patch.Tag.Package[0].SHA1)
 	}
 }
 
