@@ -106,7 +106,7 @@ func getGamesFromFolder(games map[string]*GameInfo, path string) {
 	}
 
 	for _, file := range files {
-		if file.IsDir() && file.Name() != "TEST12345" && file.Name() != ".locks" {
+		if file.IsDir() && file.Name() != "TEST12345" && file.Name() != ".locks" && !strings.Contains(file.Name(), "INST") {
 			url := getURLFromID(file.Name())
 
 			category, version := getCategoryAndVersion(path + file.Name())
