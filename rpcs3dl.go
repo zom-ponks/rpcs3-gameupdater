@@ -66,7 +66,7 @@ func getURLFromID(id string) string {
 
 /* gets the game's version */
 
-func getVersion(path string) string {
+func getCategoryAndVersion(path string) (string, string) {
 	var folder string
 	if strings.Contains(path, "/disc/") {
 		folder = "/PS3_GAME"
@@ -75,7 +75,7 @@ func getVersion(path string) string {
 	params, err := filepath.Glob(path + folder + "/PARAM.SFO")
 	if err != nil {
 		printError("Error finding %s/**/PARAM.sfo  (errorcode: %s)\n", path, err)
-		return ""
+		return "", ""
 	}
 	param := params[0]
 	file, err := os.Open(param)
@@ -83,10 +83,12 @@ func getVersion(path string) string {
 
 	if err != nil {
 		printError(fmt.Sprintf("Couldn't open '%s' (errorcode: %s)\n", param, err))
-		return ""
+		return "", ""
 	}
 	kvp := readParamSFO(file)
-	return getVersionFromSFO(kvp)
+	cat := getCategory(kvp)
+	ver := getVersion(kvp)
+	return cat, ver
 }
 
 /* gets games URLs and versions from a specific folder */
@@ -101,7 +103,7 @@ func getGamesFromFolder(games map[string]GameInfo, path string) {
 	for _, file := range files {
 		if file.IsDir() && file.Name() != "TEST12345" && file.Name() != ".locks" {
 			url := getURLFromID(file.Name())
-			version := getVersion(path + file.Name())
+			category, version := getCategoryAndVersion(path + file.Name())
 
 			if game, ok := games[file.Name()]; ok {
 				if game.Version < version {
@@ -109,8 +111,9 @@ func getGamesFromFolder(games map[string]GameInfo, path string) {
 				}
 			} else {
 				game := GameInfo{
-					URL:     url,
-					Version: version,
+					Category: category,
+					URL:      url,
+					Version:  version,
 				}
 				games[file.Name()] = game
 			}

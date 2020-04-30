@@ -10,10 +10,10 @@ import (
 )
 
 const (
-	GameData int = 0x4744
-	SaveData int = 0x5344
-	HDDGame  int = 0x4847
-	DiscGame int = 0x4447
+	GameData uint16 = 0x4744
+	SaveData uint16 = 0x5344
+	HDDGame  uint16 = 0x4847
+	DiscGame uint16 = 0x4447
 )
 
 type Header struct {
@@ -134,6 +134,24 @@ func readParamSFO(file *os.File) map[string]string {
 	return kvp
 }
 
-func getVersionFromSFO(kvp map[string]string) string {
+/* gets the app version from the kvp */
+
+func getVersion(kvp map[string]string) string {
 	return kvp["APP_VER"]
+}
+
+/* gets the category from the kvp */
+func getCategory(kvp map[string]string) string {
+	switch binary.BigEndian.Uint16([]byte(kvp["CATEGORY"])) {
+	case GameData:
+		return "GameData"
+	case SaveData:
+		return "SaveData"
+	case HDDGame:
+		return "HDDGame"
+	case DiscGame:
+		return "DiscGame"
+	default:
+		return "Unknown Category"
+	}
 }
