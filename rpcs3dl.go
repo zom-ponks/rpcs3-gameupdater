@@ -16,6 +16,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -87,13 +88,17 @@ func getCategoryAndVersion(path string) (string, string) {
 	}
 	kvp := readParamSFO(file)
 	cat := getCategory(kvp)
-	ver := getVersion(kvp)
+	ver := getAppVersion(kvp)
+	// in case there is no app version, use version instead
+	if ver == "" {
+		ver = getVersion(kvp)
+	}
 	return cat, ver
 }
 
 /* gets games URLs and versions from a specific folder */
 
-func getGamesFromFolder(games map[string]GameInfo, path string) {
+func getGamesFromFolder(games map[string]*GameInfo, path string) {
 	files, err := ioutil.ReadDir(path)
 	if err != nil {
 		printError("Couldn't open '%s' (errorcode: '%s')\n", path, err)
@@ -103,10 +108,19 @@ func getGamesFromFolder(games map[string]GameInfo, path string) {
 	for _, file := range files {
 		if file.IsDir() && file.Name() != "TEST12345" && file.Name() != ".locks" {
 			url := getURLFromID(file.Name())
+
 			category, version := getCategoryAndVersion(path + file.Name())
 
 			if game, ok := games[file.Name()]; ok {
-				if game.Version < version {
+				versionF, err := strconv.ParseFloat(version[0:5], 64)
+				if err != nil {
+					printError("Couldn't convert '%s' (errorcode: '%s')\n", version, err)
+				}
+				prevVersionF, err := strconv.ParseFloat(game.Version[0:5], 64)
+				if err != nil {
+					printError("Couldn't convert '%s' (errorcode: '%s')\n", game.Version, err)
+				}
+				if prevVersionF < versionF {
 					game.Version = version
 				}
 			} else {
@@ -115,7 +129,7 @@ func getGamesFromFolder(games map[string]GameInfo, path string) {
 					URL:      url,
 					Version:  version,
 				}
-				games[file.Name()] = game
+				games[file.Name()] = &game
 			}
 		}
 	}
@@ -123,9 +137,9 @@ func getGamesFromFolder(games map[string]GameInfo, path string) {
 
 /* gets games URLs and versions from the various folders */
 
-func getGames(path string) map[string]GameInfo {
+func getGames(path string) map[string]*GameInfo {
 	// first from the disc folder
-	games := make(map[string]GameInfo)
+	games := make(map[string]*GameInfo)
 	getGamesFromFolder(games, path+"disc/")
 
 	// then the game folder

@@ -142,8 +142,14 @@ func readParamSFO(file *os.File) map[string]string {
 
 /* gets the app version from the kvp */
 
-func getVersion(kvp map[string]string) string {
+func getAppVersion(kvp map[string]string) string {
 	return kvp["APP_VER"]
+}
+
+/* gets the version from the kvp */
+
+func getVersion(kvp map[string]string) string {
+	return kvp["VERSION"]
 }
 
 /* gets the category from the kvp */
