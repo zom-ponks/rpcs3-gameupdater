@@ -26,6 +26,7 @@ type Config struct {
 	Rpcs3Path     string    `toml:"rpcs3path"`
 	PkgDLPath     string    `toml:"pkgdlpath"`
 	ConfigYMLPath string    `toml:"configymlpath"`
+	XMLCachePath  string    `toml:"xmlcache"`
 	DLTimeout     int       `toml:"timeout"`
 	DLRetries     int       `toml:"retries"`
 	verbosity     Verbosity `toml:"verbosity"`
@@ -55,6 +56,7 @@ func initConfig() {
 	conf = Config{
 		Rpcs3Path:     ".",
 		PkgDLPath:     ".",
+		XMLCachePath:  "./XMLs",
 		ConfigYMLPath: "",
 		DLTimeout:     30,
 		DLRetries:     3,
@@ -81,6 +83,10 @@ func initConfig() {
 	}
 	printInfo("config.yml should be at: " + conf.ConfigYMLPath)
 	confPath = "."
+	err := os.MkdirAll(conf.XMLCachePath, 0755)
+	if err != nil {
+		printError("Error creating the XMLCache folder at %s (errorcode: %s)", conf.XMLCachePath, err)
+	}
 }
 
 func parseConfFile() {
