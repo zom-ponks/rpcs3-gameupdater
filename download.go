@@ -3,7 +3,10 @@
 package main
 
 import (
+	"crypto/tls"
+	"io/ioutil"
 	"math/rand"
+	"net/http"
 	"time"
 
 	"github.com/cavaliercoder/grab"
@@ -14,9 +17,14 @@ var client *grab.Client
 // this sets up the downloader */
 func initDownloader() {
 	client = grab.NewClient()
+	// we need this because we can't verify the signature
+	client.HTTPClient.Transport = &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
+	client.HTTPClient.Timeout = time.Duration(conf.DLTimeout) * time.Second
 }
 
-/* simple downlaoder */
+/* simple downloader that supports a UI and resuming */
 
 func downloadFile(folderPath string, url string) (string, error) {
 	// Get the data
@@ -37,16 +45,16 @@ Loop:
 		case <-t.C:
 			sameLinePrint("Transferred %v / %v bytes (%.2f%%) at %.0f Mb/s",
 				resp.BytesComplete(),
-				resp.Size(),
+				resp.Size,
 				100*resp.Progress(),
 				resp.BytesPerSecond()/1024/1024)
 
 		case <-resp.Done:
 			sameLinePrint("Transferred %v / %v bytes (%.2f%%) at %.0f Mb/s",
 				resp.BytesComplete(),
-				resp.Size(),
+				resp.Size,
 				100*resp.Progress(),
-				float64(resp.Size())/(time.Now().Sub(start).Seconds())/1024/1024)
+				float64(resp.Size)/(time.Now().Sub(start).Seconds())/1024/1024)
 			stopSameLinePrint()
 			break Loop
 		}
@@ -58,9 +66,13 @@ Loop:
 	return resp.Filename, err
 }
 
+// VerifyChecksums is a function passed to downloadFileWithRetries
+// to verify the PKG after downloading it
+type VerifyChecksums func(string, string) bool
+
 /* has logic to retry and sleep */
 
-func downloadFileWithRetries(folderPath string, url string, sha string) {
+func downloadWithRetries(folderPath string, url string, sha string, verifyChecksums VerifyChecksums) string {
 	for i := 0; i < fetchConfig().DLRetries; i++ {
 		time.Sleep(time.Duration(rand.Int31n(100)) * time.Millisecond)
 		fileName, err := downloadFile(folderPath, url)
@@ -68,8 +80,27 @@ func downloadFileWithRetries(folderPath string, url string, sha string) {
 			printError("Couldn't download '%s' at '%s' (errorcode: '%s')", url, fileName, err)
 			continue
 		}
-		if verifyChecksums(fileName, sha) {
-			return
+		if verifyChecksums == nil || verifyChecksums(fileName, sha) {
+			return fileName
 		}
 	}
+	return ""
+}
+
+/* download the XML */
+
+func getXML(url string) []byte {
+	fileName := downloadWithRetries(fetchConfig().XMLCachePath, url, "", nil)
+	data, err := ioutil.ReadFile(fileName)
+	if err != nil {
+		printDebug("Error reading the file at %s (errorcode: %s)", fileName, err)
+	}
+	return data
+
+}
+
+/* download the PKG file */
+
+func getPKG(url string, sha string) {
+	downloadWithRetries(fetchConfig().PkgDLPath, url, sha, verifyPKGChecksums)
 }

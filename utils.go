@@ -18,7 +18,7 @@ func IsTTY() bool {
 }
 
 /* verify that the 3 checksums (passed, stored and calculated) match */
-func verifyChecksums(filePath string, sha string) bool {
+func verifyPKGChecksums(filePath string, sha string) bool {
 	file, err := os.Open(filePath)
 	if err != nil {
 		printError("Couldn't open '%s' (errorcode: '%s')\n", filePath, err)
