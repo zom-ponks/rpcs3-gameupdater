@@ -43,16 +43,16 @@ Loop:
 	for {
 		select {
 		case <-t.C:
-			sameLinePrint("Transferred %v / %v bytes (%.2f%%) at %.0f Mb/s",
-				resp.BytesComplete(),
-				resp.Size,
+			sameLinePrint("Transferred %v/%v Mb (%.2f%%) at %.0f Mb/s",
+				resp.BytesComplete()/1024/1024,
+				resp.Size/1024/1024,
 				100*resp.Progress(),
 				resp.BytesPerSecond()/1024/1024)
 
 		case <-resp.Done:
-			sameLinePrint("Transferred %v / %v bytes (%.2f%%) at %.0f Mb/s",
-				resp.BytesComplete(),
-				resp.Size,
+			sameLinePrint("Transferred %v/%v Mb (%.2f%%) at %.0f Mb/s",
+				resp.BytesComplete()/1024/1024,
+				resp.Size/1024/1024,
 				100*resp.Progress(),
 				float64(resp.Size)/(time.Now().Sub(start).Seconds())/1024/1024)
 			stopSameLinePrint()
@@ -93,7 +93,7 @@ func getXML(url string) []byte {
 	fileName := downloadWithRetries(fetchConfig().XMLCachePath, url, "", nil)
 	data, err := ioutil.ReadFile(fileName)
 	if err != nil {
-		printDebug("Error reading the file at %s (errorcode: %s)", fileName, err)
+		printError("Error reading the file at %s (errorcode: %s)", fileName, err)
 	}
 	return data
 
@@ -101,6 +101,10 @@ func getXML(url string) []byte {
 
 /* download the PKG file */
 
-func getPKG(url string, sha string) {
-	downloadWithRetries(fetchConfig().PkgDLPath, url, sha, verifyPKGChecksums)
+func getPKG(url string, sha string) bool {
+	fileName := downloadWithRetries(fetchConfig().PkgDLPath, url, sha, verifyPKGChecksums)
+	if fileName != "" {
+		return false
+	}
+	return true
 }

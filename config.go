@@ -61,7 +61,7 @@ func initConfig() {
 		DLTimeout:     30,
 		DLRetries:     3,
 		color:         true,
-		verbosity:     Debug,
+		verbosity:     Info,
 	}
 
 	createConfFile()

@@ -142,9 +142,12 @@ func getLocalGames(path string) map[string]*GameInfo {
 }
 
 func getGamesFromServer(games map[string]*GameInfo) {
+	var downloaded []string
+	count := 1
 	for gameID, game := range games {
 		printDebug("gameID: %s, url: %s, version: %f", gameID, game.URL, game.Version)
-		//printInfo("fetching URL: '%s'", url)
+		printInfo("Downloading PKGs for game %d/%d, at URL: '%s'", count, len(games), game.URL)
+		count = count + 1
 
 		patch := TitlePatch{}
 		err := xml.Unmarshal(getXML(game.URL), &patch)
@@ -154,8 +157,11 @@ func getGamesFromServer(games map[string]*GameInfo) {
 			continue
 		}
 
+		count2 := 1
 		for i := range patch.Tag.Package {
-			printInfo("title '%s' (%s) version %s url '%s' SHA '%s':",
+			printInfo("Downloading PKG %d/%d, for game %s", count2, len(patch.Tag.Package), gameID)
+			count2 = count2 + 1
+			printDebug("title '%s' (%s) version %s url '%s' SHA '%s':",
 				patch.Tag.Package[i].Paramsfo.TITLE,
 				patch.Titleid,
 				patch.Tag.Package[i].Version,
@@ -169,10 +175,12 @@ func getGamesFromServer(games map[string]*GameInfo) {
 				printDebug("Version %f is inferior to current of %f", version, game.Version)
 				continue
 			}
-			//downloadFileWithRetries(conf.PkgDLPath, patch.Tag.Package[i].URL, patch.Tag.Package[i].SHA1)
+			if getPKG(patch.Tag.Package[i].URL, patch.Tag.Package[i].SHA1) {
+				downloaded = append(downloaded, gameID)
+			}
 		}
-
 	}
+	printInfo("We've downloaded %d games", len(downloaded))
 }
 
 func main() {
