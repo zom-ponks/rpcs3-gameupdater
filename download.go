@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"math/rand"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/cavaliercoder/grab"
@@ -80,9 +81,20 @@ func downloadWithRetries(folderPath string, url string, sha string, verifyChecks
 			printError("Couldn't download '%s' at '%s' (errorcode: '%s')", url, fileName, err)
 			continue
 		}
-		if verifyChecksums == nil || verifyChecksums(fileName, sha) {
-			return fileName
+		if verifyChecksums != nil {
+			if verifyChecksums(fileName, sha) {
+				return fileName
+			}
+			// because the downloader retries based on file size
+			// keeping the wrong file around could be a problem
+			// it may be better to keep it for a retry or so first though
+			err := os.Remove(fileName)
+			if err != nil {
+				printError("Couldn't delete file '%s' (errorcode: '%s')", fileName, err)
+			}
+			continue
 		}
+		return fileName
 	}
 	return ""
 }
