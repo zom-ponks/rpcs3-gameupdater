@@ -16,6 +16,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync"
 )
 
 /* parses the given config.yml file and returns the path to dev_hdd0 */
@@ -143,43 +144,49 @@ func getLocalGames(path string) map[string]*GameInfo {
 
 func getGamesFromServer(games map[string]*GameInfo) {
 	var downloaded []string
-	count := 1
+	count := 0
+	var wg sync.WaitGroup
+	wg.Add(len(games))
 	for gameID, game := range games {
-		printDebug("gameID: %s, url: %s, version: %f", gameID, game.URL, game.Version)
-		printInfo("Downloading PKGs for game %d/%d, at URL: '%s'", count, len(games), game.URL)
 		count = count + 1
+		go func(count int, gameID string, game *GameInfo) {
+			defer wg.Done()
+			printDebug("gameID: %s, url: %s, version: %f", gameID, game.URL, game.Version)
+			printInfo("Downloading PKGs for game %d/%d, at URL: '%s'", count, len(games), game.URL)
 
-		patch := TitlePatch{}
-		err := xml.Unmarshal(getXML(game.URL), &patch)
+			patch := TitlePatch{}
+			err := xml.Unmarshal(getXML(game.URL), &patch)
 
-		if err != nil {
-			printError("can't parse response XML.")
-			continue
-		}
-
-		count2 := 1
-		for i := range patch.Tag.Package {
-			printInfo("Downloading PKG %d/%d, for game %s", count2, len(patch.Tag.Package), gameID)
-			count2 = count2 + 1
-			printDebug("title '%s' (%s) version %s url '%s' SHA '%s':",
-				patch.Tag.Package[i].Paramsfo.TITLE,
-				patch.Titleid,
-				patch.Tag.Package[i].Version,
-				patch.Tag.Package[i].URL,
-				patch.Tag.Package[i].SHA1)
-			version, err := strconv.ParseFloat(patch.Tag.Package[i].Version, 64)
 			if err != nil {
-				printError("Couldn't convert '%s' (errorcode: '%s')", patch.Tag.Package[i].Version, err)
+				printError("can't parse response XML.")
+				return
 			}
-			if version < game.Version {
-				printDebug("Version %f is inferior to current of %f", version, game.Version)
-				continue
+
+			count2 := 1
+			for i := range patch.Tag.Package {
+				printInfo("Downloading PKG %d/%d, for game %s", count2, len(patch.Tag.Package), gameID)
+				count2 = count2 + 1
+				printDebug("title '%s' (%s) version %s url '%s' SHA '%s':",
+					patch.Tag.Package[i].Paramsfo.TITLE,
+					patch.Titleid,
+					patch.Tag.Package[i].Version,
+					patch.Tag.Package[i].URL,
+					patch.Tag.Package[i].SHA1)
+				version, err := strconv.ParseFloat(patch.Tag.Package[i].Version, 64)
+				if err != nil {
+					printError("Couldn't convert '%s' (errorcode: '%s')", patch.Tag.Package[i].Version, err)
+				}
+				if version < game.Version {
+					printDebug("Version %f is inferior to current of %f", version, game.Version)
+					return
+				}
+				if getPKG(patch.Tag.Package[i].URL, patch.Tag.Package[i].SHA1) {
+					downloaded = append(downloaded, gameID)
+				}
 			}
-			if getPKG(patch.Tag.Package[i].URL, patch.Tag.Package[i].SHA1) {
-				downloaded = append(downloaded, gameID)
-			}
-		}
+		}(count, gameID, game)
 	}
+	wg.Wait()
 	printInfo("We've downloaded %d games", len(downloaded))
 }
 
