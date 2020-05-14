@@ -3,9 +3,10 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"os"
+
+	"github.com/spf13/pflag"
 )
 
 const helpText string = `
@@ -22,39 +23,26 @@ func parseArguments() {
 	var parsedConf = fetchConfig()
 	var conf string
 
-	// NB. for now -h and --help are handled by flag itself, we might want to customize that
+	// NB. for now -h and --help are handled by pflag itself, we might want to customize that
 
 	var displayVersion bool
 
-	flag.BoolVar(&displayVersion, "version", false, "Display application version")
-	flag.BoolVar(&displayVersion, "v", false, "Display application version")
+	pflag.BoolVarP(&displayVersion, "version", "v", false, "Display application version")
+	pflag.StringVarP(&conf, "conf", "c", confFile, fmt.Sprintf("Override default configuration file (%v)", confFile))
 
-	//
-	flag.StringVar(&conf, "conf", confFile, fmt.Sprintf("Override default configuration file (%v)", confFile))
-	flag.StringVar(&conf, "c", confFile, fmt.Sprintf("Override default configuration file (%v)", confFile))
+	// this needs to be implemented either with the pflag.Value interface, or just straight string parsing
+	//pflag.StringVar(&parsedConf.verbosity, "verbosity", "Output verbosity, accepted values: error, warning, info, debug")
 
-	// this needs to be implemented either with the flag.Value interface, or just straight string parsing
-	//flag.StringVar(&parsedConf.verbosity, "verbosity", "Output verbosity, accepted values: error, warning, info, debug")
-
-	flag.StringVar(&parsedConf.Rpcs3Path, "rpcs3path", parsedConf.Rpcs3Path, "Set RPCS3 path")
-	flag.StringVar(&parsedConf.Rpcs3Path, "rpcs", parsedConf.Rpcs3Path, "Set RPCS3 path")
-
-	flag.StringVar(&parsedConf.PkgDLPath, "dlpath", parsedConf.PkgDLPath, "Set download path")
-	flag.StringVar(&parsedConf.PkgDLPath, "dl", parsedConf.PkgDLPath, "Set download path")
-
-	flag.StringVar(&parsedConf.ConfigYMLPath, "configyml", parsedConf.ConfigYMLPath, "Set config.yml path")
-	flag.StringVar(&parsedConf.ConfigYMLPath, "yml", parsedConf.ConfigYMLPath, "Set config.yml path")
-
-	flag.StringVar(&parsedConf.XMLCachePath, "xmlcache", parsedConf.XMLCachePath, "XML cache location")
-	flag.StringVar(&parsedConf.XMLCachePath, "xml", parsedConf.XMLCachePath, "XML cache location")
-
+	pflag.StringVarP(&parsedConf.Rpcs3Path, "rpcs3path", "rpcs", parsedConf.Rpcs3Path, "Set RPCS3 path")
+	pflag.StringVarP(&parsedConf.PkgDLPath, "dlpath", "dl", parsedConf.PkgDLPath, "Set download path")
+	pflag.StringVarP(&parsedConf.ConfigYMLPath, "configyml", "yml", parsedConf.ConfigYMLPath, "Set config.yml path")
+	pflag.StringVarP(&parsedConf.XMLCachePath, "xmlcache", "xml", parsedConf.XMLCachePath, "XML cache location")
 	// TODO: short ones for these as well?
-	flag.IntVar(&parsedConf.DLTimeout, "timeout", parsedConf.DLTimeout, "Download timeout (in seconds)")
-	flag.IntVar(&parsedConf.DLRetries, "retry", parsedConf.DLRetries, "Number of download retries")
+	pflag.IntVar(&parsedConf.DLTimeout, "timeout", parsedConf.DLTimeout, "Download timeout (in seconds)")
+	pflag.IntVar(&parsedConf.DLRetries, "retry", parsedConf.DLRetries, "Number of download retries")
+	pflag.BoolVar(&parsedConf.color, "nocolor", true, "Disable output color")
 
-	flag.BoolVar(&parsedConf.color, "nocolor", true, "Disable output color")
-
-	flag.Parse()
+	pflag.Parse()
 
 	fmt.Printf("config file location: %v\n", conf)
 	fmt.Printf("parsed args conf: %#v\n\n", parsedConf)
