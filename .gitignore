@@ -5,6 +5,7 @@
 *.so
 *.dylib
 rpcs3-gameupdater
+Pkgs
 
 # Test binary, built with `go test -c`
 *.test
