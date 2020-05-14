@@ -5,9 +5,12 @@ package main
 import (
 	"crypto/tls"
 	"io/ioutil"
-	"math/rand"
+	"path/filepath"
+	//"math/rand"
 	"net/http"
 	"os"
+	"path"
+	"strings"
 	"time"
 
 	"github.com/cavaliercoder/grab"
@@ -67,6 +70,14 @@ Loop:
 	return resp.Filename, err
 }
 
+/* removes ".tmp" from the filename */
+
+func renameToNoTmp(fileName string) string {
+	newName := strings.Replace(fileName, ".tmp", "", 1)
+	os.Rename(fileName, newName)
+	return newName
+}
+
 // VerifyChecksums is a function passed to downloadFileWithRetries
 // to verify the PKG after downloading it
 type VerifyChecksums func(string, string) bool
@@ -74,16 +85,21 @@ type VerifyChecksums func(string, string) bool
 /* has logic to retry and sleep */
 
 func downloadWithRetries(folderPath string, url string, sha string, verifyChecksums VerifyChecksums) string {
+	filePath := path.Join(folderPath, filepath.Base(url))
+	if pathExists(filePath) {
+		return filePath
+	}
+	filePath = filePath + ".tmp"
 	for i := 0; i < fetchConfig().DLRetries; i++ {
-		time.Sleep(time.Duration(rand.Int31n(100)) * time.Millisecond)
-		fileName, err := downloadFile(folderPath, url)
+		//time.Sleep(time.Duration(rand.Int31n(100)) * time.Millisecond)
+		fileName, err := downloadFile(filePath, url)
 		if err != nil {
 			printError("Couldn't download '%s' at '%s' (errorcode: '%s')", url, fileName, err)
 			continue
 		}
 		if verifyChecksums != nil {
 			if verifyChecksums(fileName, sha) {
-				return fileName
+				return renameToNoTmp(fileName)
 			}
 			// because the downloader retries based on file size
 			// keeping the wrong file around could be a problem
@@ -94,7 +110,7 @@ func downloadWithRetries(folderPath string, url string, sha string, verifyChecks
 			}
 			continue
 		}
-		return fileName
+		return renameToNoTmp(fileName)
 	}
 	return ""
 }
