@@ -34,7 +34,7 @@ type Config struct {
 }
 
 var conf Config
-var confPath string
+var confFile = "~/.config/rpcs3-gameupdater.toml"
 
 func fetchConfig() Config {
 	// fetch config here
@@ -82,7 +82,7 @@ func initConfig() {
 		conf.ConfigYMLPath = os.Getenv("RPCS3_CONFIG_DIR") + confFile
 	}
 	printInfo("config.yml should be at: " + conf.ConfigYMLPath)
-	confPath = "."
+	//confPath = "."
 	err := os.MkdirAll(conf.XMLCachePath, 0755)
 	if err != nil {
 		printError("Error creating the XMLCache folder at %s (errorcode: %s)", conf.XMLCachePath, err)
@@ -106,7 +106,7 @@ func createConfFile() {
 	if err != nil {
 		printError("error: %v", err)
 	}
-	printInfo(string(confTOML))
+	printDebug(string(confTOML))
 }
 
 // TODO: handle config changes gracefully, from UI and from command line args

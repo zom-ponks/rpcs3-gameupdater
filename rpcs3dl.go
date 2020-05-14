@@ -191,8 +191,14 @@ func getGamesFromServer(games map[string]*GameInfo) {
 }
 
 func main() {
-	parseArguments()
+
+	// create a default configuration
 	initConfig()
+	// parse cmdline
+	parseArguments()
+	// update configurattion
+	parseConfFile()
+
 	initDownloader()
 	path := getLocalGamesPath(fetchConfig().ConfigYMLPath)
 	games := getLocalGames(path)
