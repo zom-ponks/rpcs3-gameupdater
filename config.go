@@ -55,7 +55,7 @@ func updateConfig(newconf Config) {
 func initConfig() {
 	conf = Config{
 		Rpcs3Path:     ".",
-		PkgDLPath:     ".",
+		PkgDLPath:     "./Pkgs",
 		XMLCachePath:  "./XMLs",
 		ConfigYMLPath: "",
 		DLTimeout:     30,
